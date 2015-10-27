@@ -19,6 +19,45 @@ class RWLock {
         implementación de Read-Write Locks utilizando únicamente Variables de
         Condición. */
 
+        /*pasos para lock de escritura:
+            mutex cantlecturas - escribiendo
+            levanto actual = cantlecturas            
+            si actual = 0 y _escribiendo = false 
+                _escribiendo = true y libero ambos mutex
+        */
+
+        /*
+            pasos para unlock de escritura
+            pido mutex _escribiendo
+            _escribiendo = false
+            ibero mutex _escribiendo
+         */
+        
+        /*
+            pasos para lock de lectura
+            pido mutex _cantlecturas
+            aumento _cantlencturas
+            libero mutex _cantlecturas
+            
+            pido mutex escribiendo
+            si escribiendo = false
+            libero mutex escribiendo
+         */
+        
+        /*
+            pasos para unlock de lectura
+            pido mutex _cantlecturas
+            resto _cantlecturas
+            libero mutex _cantlecturas
+         */
+        
+
+
+        unsigned int _cantLecturas;
+
+        bool _escribiendo;
+
+
         pthread_rwlock_t rwlock;
 };
 
