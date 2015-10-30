@@ -21,7 +21,12 @@ void RWLock :: rlock() {
     _cantLecturas++;
   pthread_mutex_unlock(_mCantLecturas);
 
-  while (_escribiendo)
+  pthread_mutex_lock(_mEscribiendo);
+  while (_escribiendo) {
+    pthread_cond_wait( &cond_cantLecturas , &_mCantLecturas); 
+  }
+
+  pthread_mutex_unlock(_mEscribiendo);
 
 }
 
@@ -36,13 +41,18 @@ void RWLock :: wlock() {
     pthread_cond_wait( &cond_cantLecturas , &_mCantLecturas); 
   }
   _escribiendo = true;
-  pthread_mutex_unlock(_mEscribiendo);
   pthread_mutex_unlock(_mCantLecturas);
 }
 
 void RWLock :: runlock() {
+  pthread_mutex_lock(_mCantLecturas);
+    _cantLecturasHasta--;
+    _cantLecturas--;
+  pthread_mutex_unlock(_mCantLecturas);
+
 }
 
 void RWLock :: wunlock() {
   _escribiendo = false;
+  pthread_mutex_unlock(_mEscribiendo);
 }
