@@ -55,15 +55,14 @@ class RWLock {
 
         unsigned int _cantLecturas;
         unsigned int _cantLecturasHasta;
-        
 
         bool _escribiendo;
 
 
-        pthread_rwlock_t rwlock;
         pthread_mutex_t _mCantLecturas;
         pthread_mutex_t _mEscribiendo;
-        pthread_cond_t cond_cantLecturas;
+        pthread_cond_t _cond_cantLecturas;
+        pthread_cond_t _cond_escribiendo;
 };
 
 #endif
