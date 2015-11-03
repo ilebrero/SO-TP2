@@ -91,12 +91,10 @@ int main(int argc, const char* argv[]) {
    // aceptar conexiones entrantes.
     socket_size = sizeof(remoto);
     while (true) {
-        cout << "estoy espperando" << endl;
         if ((socketfd_cliente = accept(socket_servidor, (struct sockaddr*) &remoto, (socklen_t*) &socket_size)) == -1)
             cerr << "Error al aceptar conexion" << endl;
         else {
             pthread_t t;
-            cout << "tu cliente es : " << socketfd_cliente << endl;
             pthread_create(&t, NULL,(void* (*)(void*)) &atendedor_de_jugador, (void*) (long) socketfd_cliente);
         }
     }
