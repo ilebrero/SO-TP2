@@ -9,8 +9,6 @@ void escribir() {
     lock.wlock();
     var++;
     lock.wunlock();
-//    std::cout << "termine de unlock escribir" << std::endl;
-    //sleep(1);
   }
   
 }
@@ -21,7 +19,6 @@ void leer() {
     lock.rlock();
     std::cout << "var: " << var << std::endl;
     lock.runlock();
- //   std::cout << "termine de unlock leer" << std::endl;
   }
   
 }
@@ -85,29 +82,3 @@ int main(int argc, char* argv[]) {
   
   return 0;
 }
-  /*
-
-  for (int i = 0 ; i < 149 ; i+=2) {
-    pthread_create(&tid[i], NULL, (void* (*)(void*)) leer, NULL);
-    pthread_create(&tid[i+1], NULL,(void* (*)(void*)) escribir, NULL);
-    pthread_join(tid[i], NULL);
-    pthread_join(tid[i+1], NULL);
-  
-  }
- */
-  /*
-  pthread_create(&tid2, NULL,(void* (*)(void*)) leer, NULL);
-  pthread_create(&tid1, NULL,(void* (*)(void*)) escribir, NULL);
-  pthread_create(&tid3, NULL,(void* (*)(void*)) leer, NULL);
-  pthread_create(&tid4, NULL,(void* (*)(void*)) leer, NULL);
-  pthread_create(&tid5, NULL,(void* (*)(void*)) escribir, NULL);
-  pthread_create(&tid6, NULL,(void* (*)(void*)) leer, NULL);
-
-
-  pthread_join(tid2, NULL);
-  pthread_join(tid1, NULL);
-  pthread_join(tid3, NULL);
-  pthread_join(tid4, NULL);
-  pthread_join(tid5, NULL);
-  pthread_join(tid6, NULL);
-*/
