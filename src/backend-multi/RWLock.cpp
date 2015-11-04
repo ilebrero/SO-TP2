@@ -42,7 +42,6 @@ void RWLock :: wlock() {
     _cantLecturasHasta = _cantLecturas;
 
   while (_cantLecturasHasta > 0) { 
-//    std::cout << "cantLecturasHasta: " << _cantLecturasHasta << std::endl;
     pthread_cond_wait(&_cond_cantLecturas, &_mCantLecturas); 
   }
   pthread_mutex_lock(&_mEstanEscribiendo);
@@ -60,8 +59,6 @@ void RWLock :: runlock() {
   if (_cantLecturasHasta == 0)
     pthread_cond_broadcast(&_cond_cantLecturas);
 
-//  std::cout << "cantLecturas en unlockr: " << _cantLecturas << std::endl;
-//  std::cout << "cantLecturasHasta en unlockr: " << _cantLecturasHasta << std::endl;
   _cantLecturas--;
   pthread_mutex_unlock(&_mCantLecturas);
 
