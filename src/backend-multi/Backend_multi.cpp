@@ -104,7 +104,6 @@ int main(int argc, const char* argv[]) {
 
 
 void atendedor_de_jugador(int socket_fd) {
-    cout << "tu socket es " << socket_fd << endl;
     // variables locales del jugador
     char nombre_jugador[21];
     list<Casillero> palabra_actual; // lista de letras de la palabra aún no confirmada
@@ -119,10 +118,8 @@ void atendedor_de_jugador(int socket_fd) {
         terminar_servidor_de_jugador(socket_fd, palabra_actual);
     }
 
-    cout << "Esperando que juegue " << nombre_jugador << endl;
 
     while (true) {
-        cout << "te estoy esperando -.-" << endl;
         // espera una letra o una confirmación de palabra
         char mensaje[MENSAJE_MAXIMO+1];
         int comando = recibir_comando(socket_fd, mensaje);
@@ -130,10 +127,8 @@ void atendedor_de_jugador(int socket_fd) {
             Casillero ficha;
             if (parsear_casillero(mensaje, ficha) != 0) {
                 // no es un mensaje LETRA bien formado, hacer de cuenta que nunca llegó
-                cout << "te estoy esperando -.- 1" << endl;
                 continue;
             }
-            cout << "te estoy esperando -.- 2" << endl;
             // ficha contiene la nueva letra a colocar
             // verificar si es una posición válida del tablero
             if (es_ficha_valida_en_palabra(ficha, palabra_actual)) {
@@ -143,26 +138,21 @@ void atendedor_de_jugador(int socket_fd) {
                 tablero_letras[ficha.fila][ficha.columna] = ficha.letra;
                 lock_letras.wunlock();
                 // OK
-                cout << "te estoy esperando -.- 3" << endl;
                 if (enviar_ok(socket_fd) != 0) {
                     // se produjo un error al enviar. Cerramos todo.
-                    cout << "te estoy esperando -.- 4 " << endl;
                     terminar_servidor_de_jugador(socket_fd, palabra_actual);
                 }
             }
             else {
-                cout << "te estoy esperando -.- 5 " << endl;
                 quitar_letras(palabra_actual);
                 // ERROR
                 if (enviar_error(socket_fd) != 0) {
-                    cout << "te estoy esperando -.- 6" << endl;
                     // se produjo un error al enviar. Cerramos todo.
                     terminar_servidor_de_jugador(socket_fd, palabra_actual);
                 }
             }
         }
         else if (comando == MSG_PALABRA) {
-            cout << "te estoy esperando -.- 7" << endl;
             // las letras acumuladas conforman una palabra completa, escribirlas en el tablero de palabras y borrar las letras temporales
             for (list<Casillero>::const_iterator casillero = palabra_actual.begin(); casillero != palabra_actual.end(); casillero++) {
               lock_palabras.wlock();
@@ -173,26 +163,22 @@ void atendedor_de_jugador(int socket_fd) {
 
             if (enviar_ok(socket_fd) != 0) {
                 // se produjo un error al enviar. Cerramos todo.
-                cout << "te estoy esperando -.- 8" << endl;
                 terminar_servidor_de_jugador(socket_fd, palabra_actual);
             }
         }
         else if (comando == MSG_UPDATE) {
             if (enviar_tablero(socket_fd) != 0) {
 
-                cout << "te estoy esperando -.- 9" << endl;
                 // se produjo un error al enviar. Cerramos todo.
                 terminar_servidor_de_jugador(socket_fd, palabra_actual);
             }
         }
         else if (comando == MSG_INVALID) {
             // no es un mensaje válido, hacer de cuenta que nunca llegó
-            cout << "te estoy esperando -.- 10 " << endl;
             continue;
         }
         else {
             // se produjo un error al recibir. Cerramos todo.
-            cout << "te estoy esperando -.- 11 " << endl;
             terminar_servidor_de_jugador(socket_fd, palabra_actual);
         }
     }
@@ -322,15 +308,12 @@ void terminar_servidor_de_jugador(int socket_fd, list<Casillero>& palabra_actual
 
 
 void quitar_letras(list<Casillero>& palabra_actual) {
-    cout << "te estoy por sacar las letras" << endl;  
-
     for (list<Casillero>::const_iterator casillero = palabra_actual.begin(); casillero != palabra_actual.end(); casillero++) {
       lock_letras.wlock();
         tablero_letras[casillero->fila][casillero->columna] = VACIO;
       lock_letras.wunlock();
     }
 
-    cout << "te saque tus letras JA!" << endl;
     palabra_actual.clear();
 }
 
@@ -368,9 +351,12 @@ bool es_ficha_valida_en_palabra(const Casillero& ficha, const list<Casillero>& p
 
             for (unsigned int columna = mas_distante.columna; columna != ficha.columna; columna += paso) {
                 // el casillero DEBE estar ocupado en el tablero de palabras
+                lock_palabras.rlock();
                 if (!(puso_letra_en(ficha.fila, columna, palabra_actual)) && tablero_palabras[ficha.fila][columna] == VACIO) {
+                  lock_palabras.runlock();
                   return false;
                 }
+                lock_palabras.runlock();
             }
 
         } else if (distancia_horizontal == 0) {
@@ -386,9 +372,12 @@ bool es_ficha_valida_en_palabra(const Casillero& ficha, const list<Casillero>& p
 
             for (unsigned int fila = mas_distante.fila; fila != ficha.fila; fila += paso) {
                 // el casillero DEBE estar ocupado en el tablero de palabras
+                lock_palabras.rlock();
                 if (!(puso_letra_en(fila, ficha.columna, palabra_actual)) && tablero_palabras[fila][ficha.columna] == VACIO) {
+                  lock_palabras.runlock();
                     return false;
                 }
+                  lock_palabras.runlock();
             }
         }
         else {
@@ -418,12 +407,9 @@ Casillero casillero_mas_distante_de(const Casillero& ficha, const list<Casillero
 
 bool puso_letra_en(unsigned int fila, unsigned int columna, const list<Casillero>& letras) {
     for (list<Casillero>::const_iterator casillero = letras.begin(); casillero != letras.end(); casillero++) {
-      lock_letras.rlock();
         if (casillero->fila == fila && casillero->columna == columna)
-          lock_letras.runlock();
             return true;
 
-      lock_letras.runlock();
     }
     // si no encontró
     return false;
